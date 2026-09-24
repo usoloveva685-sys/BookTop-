@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мой Книжный Шкаф</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,serif;background:radial-gradient(ellipse at center,#1a0f08 0%,#0a0505 100%);color:#e0d5c5;padding:20px;min-height:100vh}
+h1{text-align:center;color:#d4af37;font-size:2em;margin-bottom:5px;text-shadow:0 0 20px rgba(212,175,55,0.3)}
+.subtitle{text-align:center;color:#888;font-style:italic;margin-bottom:20px;font-size:0.9em}
+.controls{display:flex;gap:10px;margin-bottom:25px;flex-wrap:wrap}
+.search-box{flex:1;min-width:150px}
+.search-box input{width:100%;padding:10px;background:#1a1510;border:1px solid #3d2817;border-radius:4px;color:#e0d5c5;font-size:1em}
+.btn{padding:10px 15px;background:#d4af37;color:#1a1a1a;border:none;border-radius:4px;font-size:1em;font-weight:bold;cursor:pointer}
+.btn:hover{background:#e5c048}
+.btn-danger{background:#8b2020;color:white}
+.btn-secondary{background:#444;color:#ddd}
+.shelf{margin-bottom:60px;background:linear-gradient(180deg,#1a1208,#2a1a0e,#1a1208);border:2px solid #3d2817;border-radius:3px;padding:20px 20px 0;position:relative;box-shadow:inset 0 0 40px rgba(0,0,0,0.7),0 0 30px rgba(212,175,55,0.05)}
+.shelf-wood{height:20px;background:linear-gradient(180deg,#5a3a1a,#3d2817,#2a1a0e);border-radius:0 0 3px 3px;margin-top:15px;box-shadow:0 4px 0 #1a0f08,0 6px 20px rgba(0,0,0,0.8)}
+.shelf-title{color:#d4af37;font-size:1.3em;margin-bottom:15px;padding:10px 15px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.08),transparent);border-bottom:1px solid #3d2817;display:flex;align-items:center;gap:10px}
+.shelf-icon{font-size:1.5em}
+.books-row{display:flex;gap:50px;flex-wrap:wrap;min-height:200px;align-items:flex-end;padding-bottom:15px;perspective:1200px}
+.book-3d{width:90px;height:170px;position:relative;cursor:pointer;transition:all 0.5s;transform-style:preserve-3d;transform:rotateY(25deg)}
+.book-3d:hover{transform:rotateY(0deg) translateY(-15px) scale(1.05);z-index:10}
+.book-3d:hover .delete-btn{display:flex}
+.book-front{position:absolute;left:0;top:0;width:100%;height:100%;border-radius:2px;overflow:hidden;backface-visibility:hidden;box-shadow:4px 4px 15px rgba(0,0,0,0.6)}
+.book-front img{width:100%;height:100%;object-fit:cover}
+.book-front-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px;background:linear-gradient(180deg,var(--spine-color),var(--spine-color-dark))}
+.front-title{color:rgba(255,255,255,0.95);font-size:0.7em;font-weight:bold;text-align:center;text-shadow:2px 2px 4px rgba(0,0,0,0.9);line-height:1.3;writing-mode:vertical-rl;transform:rotate(180deg);max-height:150px;overflow:hidden}
+.book-spine-face{position:absolute;left:-16px;top:0;width:16px;height:100%;transform:rotateY(-90deg);transform-origin:right center;border-radius:2px 0 0 2px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:inset -3px 0 6px rgba(0,0,0,0.5)}
+.spine-face-text{writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);color:rgba(255,255,255,0.95);font-size:0.55em;font-weight:bold;text-shadow:1px 1px 3px rgba(0,0,0,0.9);max-height:150px;overflow:hidden;white-space:nowrap}
+.book-top{position:absolute;left:-16px;top:-5px;width:16px;height:5px;transform:rotateX(90deg);transform-origin:bottom center;background:rgba(255,255,255,0.2);border-radius:1px}
+.spine-dragon{background:linear-gradient(180deg,#d4af37,#8b6914)}
+.spine-kitsune{background:linear-gradient(180deg,#e07020,#8b3a0f)}
+.spine-neko{background:linear-gradient(180deg,#c08060,#6b3a2a)}
+.spine-kappa{background:linear-gradient(180deg,#5a8a5a,#2a4a2a)}
+.spine-tengu{background:linear-gradient(180deg,#8b2020,#4a0a0a)}
+.spine-yurei{background:linear-gradient(180deg,#4a4a6a,#1a1a3a)}
+.spine-yuki{background:linear-gradient(180deg,#a0c0e0,#4a6a8a)}
+.delete-btn{position:absolute;top:-10px;right:-10px;width:22px;height:22px;background:#cc2222;color:white;border:2px solid #1a1a1a;border-radius:50%;font-size:0.8em;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:20}
+.empty-shelf{color:#666;font-style:italic;padding:40px;text-align:center}
+.candle{position:absolute;font-size:1.5em;opacity:0.6;animation:flicker 2s infinite alternate}
+.candle-left{left:15px;bottom:30px}
+.candle-right{right:15px;bottom:30px}
+@keyframes flicker{0%{opacity:0.5}100%{opacity:0.8}}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal.active{display:flex}
+.modal-content{background:#1a1510;border:2px solid #3d2817;border-radius:8px;padding:25px;max-width:450px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-title{color:#d4af37;font-size:1.5em;margin-bottom:15px;text-align:center}
+.detail-cover{width:100%;height:300px;background:#2a1a0e;border-radius:6px;overflow:hidden;margin-bottom:15px;display:flex;align-items:center;justify-content:center}
+.detail-cover img{max-width:100%;max-height:100%;object-fit:contain}
+.detail-info h3{color:#d4af37;font-size:1.3em;margin-bottom:5px}
+.detail-info .author{color:#aaa;font-size:1em;margin-bottom:10px}
+.detail-info .meta{color:#888;font-size:0.9em;margin-bottom:8px}
+.detail-info .note{color:#ccc;font-style:italic;padding:12px;background:#0a0a0a;border-radius:6px;margin-top:12px;border-left:3px solid #d4af37}
+.move-btns{display:flex;gap:10px;margin-top:15px}
+.move-btns .btn{flex:1}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;color:#d4af37;margin-bottom:5px;font-size:0.95em}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px;background:#0a0a0a;border:1px solid #3d2817;border-radius:4px;color:#e0d5c5;font-size:1em}
+.form-group input:focus{outline:none;border-color:#d4af37}
+.cover-search{display:flex;gap:8px}
+.cover-search input{flex:1}
+.btn-small{padding:8px 12px;background:#5a2a2a;color:#d4af37;border:1px solid #d4af37;border-radius:4px;cursor:pointer;white-space:nowrap}
+.color-picker{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.color-option{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.color-option:hover{transform:scale(1.1)}
+.color-option.active{border-color:#fff}
+.modal-btns{display:flex;gap:10px;margin-top:15px}
+.modal-btns .btn{flex:1}
+.cover-preview{margin-top:8px;text-align:center}
+.cover-preview img{max-width:80px;max-height:120px;border-radius:4px}
+.clear-btn{padding:8px 12px;background:#333;color:#888;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:0.85em}
+</style>
+</head>
+<body>
+<h1>🌙 Мой Книжный Шкаф</h1>
+<p class="subtitle">В каждой книге живёт ещё один мир</p>
+<div class="controls">
+  <div class="search-box"><input type="text" id="searchInput" placeholder=" Поиск..."></div>
+  <button class="btn" onclick="openModal()">+ Добавить</button>
+  <button class="clear-btn" onclick="clearAll()">🗑 Сброс</button>
+</div>
+<div id="shelves"></div>
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <h2 class="modal-title">Добавить книгу</h2>
+    <form id="bookForm">
+      <div class="form-group"><label>Название *</label><input type="text" id="bTitle" required></div>
+      <div class="form-group"><label>Автор *</label><input type="text" id="bAuthor" required></div>
+      <div class="form-group"><label>Полка *</label><select id="bRating">
+        <option value="dragon">🐉 Сокровищница Дракона (10/10)</option>
+        <option value="kitsune"> Кицунэ (9/10)</option>
+        <option value="neko"> Нэко (8/10)</option>
+        <option value="kappa"> Каппа (5-7/10)</option>
+        <option value="tengu"> Тэнгу (заметки)</option>
+        <option value="yurei"> Юрэй (брошенные)</option>
+        <option value="yuki">❄️ Снежная дева (электронные)</option>
+      </select></div>
+      <div class="form-group"><label>Дата</label><input type="date" id="bDate"></div>
+      <div class="form-group"><label>Заметка</label><textarea id="bNote"></textarea></div>
+      <div class="form-group">
+        <label>Обложка</label>
+        <div class="cover-search"><input type="text" id="bCover" placeholder="Ссылка"><button type="button" class="btn-small" onclick="findCover()">🔍 Найти</button></div>
+        <div class="cover-preview" id="coverPreview"></div>
+      </div>
+      <div class="form-group">
+        <label>Цвет корешка</label>
+        <div class="color-picker">
+          <div class="color-option" style="background:#d4af37" data-color="#d4af37"></div>
+          <div class="color-option" style="background:#e07020" data-color="#e07020"></div>
+          <div class="color-option" style="background:#c08060" data-color="#c08060"></div>
+          <div class="color-option" style="background:#5a8a5a" data-color="#5a8a5a"></div>
+          <div class="color-option" style="background:#8b2020" data-color="#8b2020"></div>
+          <div class="color-option" style="background:#4a4a6a" data-color="#4a4a6a"></div>
+          <div class="color-option" style="background:#a0c0e0" data-color="#a0c0e0"></div>
+        </div>
+        <input type="hidden" id="spineColor">
+      </div>
+      <div class="modal-btns"><button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button><button type="submit" class="btn">Добавить</button></div>
+    </form>
+  </div>
+</div>
+<div class="modal" id="detailModal"><div class="modal-content" id="detailContent"></div></div>
+<script>
+const ratings={dragon:{name:"Сокровищница Дракона",icon:"",score:"10/10",cls:"spine-dragon",color:"#d4af37",dark:"#8b6914"},kitsune:{name:"Кицунэ",icon:"",score:"9/10",cls:"spine-kitsune",color:"#e07020",dark:"#8b3a0f"},neko:{name:"Нэко",icon:"",score:"8/10",cls:"spine-neko",color:"#c08060",dark:"#6b3a2a"},kappa:{name:"Каппа",icon:"",score:"5-7/10",cls:"spine-kappa",color:"#5a8a5a",dark:"#2a4a2a"},tengu:{name:"Тэнгу",icon:"",score:"заметки",cls:"spine-tengu",color:"#8b2020",dark:"#4a0a0a"},yurei:{name:"Юрэй",icon:"",score:"брошенные",cls:"spine-yurei",color:"#4a4a6a",dark:"#1a1a3a"},yuki:{name:"Снежная дева",icon:"❄️",score:"электронные",cls:"spine-yuki",color:"#a0c0e0",dark:"#4a6a8a"}};
+let books=[],nextId=1,searchQuery='',selectedColor='';
+try{const r=localStorage.getItem('myBooks');if(r){books=JSON.parse(r);for(let i=0;i<books.length;i++){if(!books[i].id)books[i].id=nextId++;else if(books[i].id>=nextId)nextId=books[i].id+1;}}}catch(e){books=[];}
+if(books.length===0){books=[{id:1,title:"Некромант на час",author:"Шеринская",rating:"dragon",date:"",note:"",cover:null,spineColor:null},{id:2,title:"Мир за великим туманом",author:"Суржевская",rating:"dragon",date:"",note:"",cover:null,spineColor:null}];nextId=3;save();}
+function save(){localStorage.setItem('myBooks',JSON.stringify(books));}
+function clearAll(){if(confirm('Сбросить к тестовым?')){books=[{id:1,title:"Некромант на час",author:"Шеринская",rating:"dragon",date:"",note:"",cover:null,spineColor:null},{id:2,title:"Мир за великим туманом",author:"Суржевская",rating:"dragon",date:"",note:"",cover:null,spineColor:null}];nextId=3;save();render();}}
+function esc(t){return t?t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';}
+document.querySelectorAll('.color-option').forEach(opt=>{opt.addEventListener('click',function(){document.querySelectorAll('.color-option').forEach(o=>o.classList.remove('active'));this.classList.add('active');selectedColor=this.dataset.color;document.getElementById('spineColor').value=selectedColor;});});
+function render(){
+  const box=document.getElementById('shelves');box.innerHTML='';
+  const keys=['dragon','kitsune','neko','kappa','tengu','yurei','yuki'];
+  const q=searchQuery.toLowerCase();
+  const filtered=books.filter(b=>!q||b.title.toLowerCase().indexOf(q)!==-1||b.author.toLowerCase().indexOf(q)!==-1);
+  keys.forEach(key=>{
+    const r=ratings[key];
+    const list=filtered.filter(b=>b.rating===key);
+    let html='<div class="shelf"><div class="shelf-title"><span class="shelf-icon">'+r.icon+'</span> '+r.name+' <span style="color:#888;font-size:0.7em;margin-left:auto">'+r.score+' — '+list.length+'</span></div>';
+    html+='<span class="candle candle-left">🕯️</span><span class="candle candle-right">🕯️</span>';
+    html+='<div class="books-row">';
+    if(list.length===0){html+='<div class="empty-shelf">Полка пуста</div>';}
+    else{list.forEach(b=>{
+      const spineColor=b.spineColor||r.color;
+      const spineDark=b.spineColor?spineColor+'88':r.dark;
+      let frontHTML='';
+      if(b.cover){frontHTML='<div class="book-front"><img src="'+b.cover+'" onerror="this.parentElement.innerHTML=\'<div class=book-front-fallback style=--spine-color:'+spineColor+';--spine-color-dark:'+spineDark+'><span class=front-title>'+esc(b.title)+'</span></div>\'"></div>';}
+      else{frontHTML='<div class="book-front"><div class="book-front-fallback" style="--spine-color:'+spineColor+';--spine-color-dark:'+spineDark+'"><span class="front-title">'+esc(b.title)+'</span></div></div>';}
+      html+='<div class="book-3d" onclick="showDetail('+b.id+')"><button class="delete-btn" onclick="event.stopPropagation();del('+b.id+')">×</button><div class="book-top"></div><div class="book-spine-face '+r.cls+'"><span class="spine-face-text">'+esc(b.title)+'</span></div>'+frontHTML+'</div>';
+    });}
+    html+='</div><div class="shelf-wood"></div></div>';
+    box.innerHTML+=html;
+  });
+}
+function del(id){const b=books.find(x=>x.id===id);if(b&&confirm('Удалить "'+b.title+'"?')){books=books.filter(x=>x.id!==id);save();render();}}
+function showDetail(id){
+  const b=books.find(x=>x.id===id);if(!b)return;
+  const r=ratings[b.rating];const ci=books.findIndex(x=>x.id===id);
+  let cover=b.cover?'<img src="'+b.cover+'" onerror="this.parentElement.innerHTML=\'<div style=color:#666;text-align:center;padding:40px>Нет обложки</div>\'">':'<div style="color:#666;text-align:center;padding:40px;font-size:3em">'+r.icon+'</div>';
+  let html='<div class="detail-cover">'+cover+'</div><div class="detail-info"><h3>'+r.icon+' '+esc(b.title)+'</h3><div class="author">'+esc(b.author)+'</div><div class="meta">Полка: '+r.name+'</div>';
+  if(b.date)html+='<div class="meta">Прочитано: '+b.date+'</div>';
+  if(b.note)html+='<div class="note">"'+esc(b.note)+'"</div>';
+  html+='</div><div class="move-btns">';
+  if(ci>0)html+='<button class="btn btn-secondary" onclick="move('+id+',-1)">⬅ Влево</button>';
+  if(ci<books.length-1)html+='<button class="btn btn-secondary" onclick="move('+id+',1)">Вправо ➡</button>';
+  html+='</div><button class="btn btn-danger" onclick="del('+id+');closeDetail()" style="width:100%;margin-top:15px">🗑 Удалить</button>';
+  html+='<button class="btn btn-secondary" onclick="closeDetail()" style="width:100%;margin-top:10px">Закрыть</button>';
+  document.getElementById('detailContent').innerHTML=html;
+  document.getElementById('detailModal').classList.add('active');
+}
+function move(id,dir){const ci=books.findIndex(x=>x.id===id);if(ci===-1)return;const ni=ci+dir;if(ni<0||ni>=books.length)return;[books[ci],books[ni]]=[books[ni],books[ci]];save();render();showDetail(id);}
+function closeModal(){document.getElementById('addModal').classList.remove('active');document.getElementById('bookForm').reset();document.getElementById('coverPreview').innerHTML='';selectedColor='';document.querySelectorAll('.color-option').forEach(o=>o.classList.remove('active'));}
+function openModal(){document.getElementById('addModal').classList.add('active');}
+function closeDetail(){document.getElementById('detailModal').classList.remove('active');}
+async function findCover(){
+  const title=document.getElementById('bTitle').value;const btn=document.querySelector('.btn-small');const prev=document.getElementById('coverPreview');
+  if(!title){alert('Введи название!');return;}
+  btn.disabled=true;btn.textContent='⏳';prev.innerHTML='<p style="color:#888">Ищу...</p>';
+  try{
+    const res=await fetch('https://www.googleapis.com/books/v1/volumes?q='+encodeURIComponent(title)+'&maxResults=1&printType=books&key=AIzaSyD3hbwVpDwjoJahwdhyiFvq8a2favsIPXk');
+    const data=await res.json();
+    if(data.items&&data.items.length>0){
+      const v=data.items[0].volumeInfo;
+      document.getElementById('bTitle').value=v.title||title;
+      document.getElementById('bAuthor').value=(v.authors?v.authors.join(', '):'');
+      if(v.imageLinks&&v.imageLinks.thumbnail){const url=v.imageLinks.thumbnail.replace('http:','https:');document.getElementById('bCover').value=url;prev.innerHTML='<img src="'+url+'">';}
+      else prev.innerHTML='<p style="color:#888">Не найдена</p>';
+    }else prev.innerHTML='<p style="color:#888">Не найдена</p>';
+  }catch(e){prev.innerHTML='<p style="color:#888">Ошибка</p>';}
+  btn.disabled=false;btn.textContent='🔍 Найти';
+}
+document.getElementById('bookForm').addEventListener('submit',function(e){e.preventDefault();books.push({id:nextId++,title:document.getElementById('bTitle').value,author:document.getElementById('bAuthor').value,rating:document.getElementById('bRating').value,date:document.getElementById('bDate').value,note:document.getElementById('bNote').value,cover:document.getElementById('bCover').value||null,spineColor:document.getElementById('spineColor').value||null});save();render();closeModal();});
+document.getElementById('searchInput').addEventListener('input',function(e){searchQuery=e.target.value;render();});
+document.getElementById('addModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('detailModal').addEventListener('click',function(e){if(e.target===this)closeDetail();});
+render();
+</script>
+</body>
+  </html>
